@@ -1,0 +1,80 @@
+#include <cstdio>
+#include <utility>
+using namespace std;
+
+using ll = long long;
+
+ll gcd(ll a, ll b) {
+	return (b == 0) ? a : gcd(b, a % b);
+}
+
+inline ll lcm(ll a, ll b) {
+	ll g = gcd(a, b);
+	return a / g * b;
+}
+
+pair<ll, ll> egcd(ll a, ll b) {
+	if (b == 0) return { 1, 0 };
+	auto t = egcd(b, a % b);
+	return { t.second, t.first - t.second * (a / b) };
+}
+
+inline ll modinv(ll a, ll m) {
+	return (egcd(a, m).first % m + m) % m;
+}
+
+bool convert(int a, int& k, int& m) {
+	int g = gcd(a, m);
+	if (k % g != 0) {
+		return false;
+	}
+	a /= g;
+	m /= g;
+	k /= g;
+	k = (k * modinv(a, m)) % m;
+	return true;
+}
+
+int n;
+int s[5], l[5], d[5];
+ll x[5], m[5];
+
+void proc(int caseidx) {
+	scanf("%d", &n);
+	bool feasible = true;
+	for (int i = 0; i < n; ++i) {
+		scanf("%d %d %d", &s[i], &l[i], &d[i]);
+		int a = s[i];
+		int b = (-d[i] + l[i]) % l[i];
+		int c = l[i];
+		if (!convert(a, b, c)) {
+			feasible = false;
+		}
+		x[i] = b;
+		m[i] = c;
+	}
+
+	for (int i = 0; i + 1 < n; ++i) {
+		auto rr = egcd(m[i], m[i + 1]);
+		ll k = (x[i] - x[i + 1]) / gcd(m[i], m[i + 1]);
+
+		__int128 p = x[i] - (__int128)m[i] * rr.first * k;
+
+		m[i + 1] = lcm(m[i], m[i + 1]);
+		x[i + 1] = (p % m[i + 1] + m[i + 1]) % m[i + 1];
+	}
+
+	ll ans = x[n - 1];
+	if (ans == 0) ans += m[n - 1];
+	printf("Case #%d\n%lld\n", caseidx, ans);
+}
+
+int main() {
+	//freopen("input.txt", "r", stdin);
+	int t;
+	scanf("%d", &t);
+	for (int i = 1; i <= t; ++i) {
+		proc(i);
+	}
+	return 0;
+}
