@@ -2,95 +2,91 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-#define ll long long int
-int Answer;
 
 
 typedef struct athlete{
-    int s;
-    int d;
-    int l;
+    long long int s;
+    long long int d;
+    long long int l;
 }athlete;
 
-typedef struct no{
-    int num;
-    int denom;
-}no;
-
-void swap(int*a, int*b){
-    int t = *a;
-        *a = *b;
-        *b = t;
+void swap(long long int&a, long long int&b){
+    auto t = a;
+    a = b;
+    b = t;
 }
 
-int gcd(int a, int b){
+long long int gcd(long long int a, long long int b){
     if(a < b){
-        swap(&a, &b);
+        swap(a, b);
     }
-    while (b != 0) {
-        int temp = b;
-        b = a % b;
-        a = temp;
-    }
+    while (b != 0) 
+        swap(b, a%b);
+
     return a;
 }
 
-long long int lcm(int a, int b){
-    int g = gcd(a, b);
+pair<long long int, long long int> egcd(int a, int b){
+    if(b == 0)
+        return {1, 0};
+    auto t = egcd(b, a%b);
+    return {t.second, t.first - t.second*(a/b)};
+}
+
+long long int lcm(long long int a, long long int b){
+    auto g = gcd(a, b);
     return (a/g)*b;
 }
 
-pair<ll, ll> egcd(ll a, ll b) {
-	if (b == 0) return { 1, 0 };
-	auto t = egcd(b, a % b);
-	return { t.second, t.first - t.second * (a / b) };
+long long int modinv(long long int a, long long int m) {
+	return (egcd(a, m).first + m) % m;
 }
 
-inline ll modinv(ll a, ll m) {
-	return (egcd(a, m).first % m + m) % m;
-}
-
-int findIntegerM(int a, int b, int n) {
+void change(int a, int &b, int &n) {
     int gd = gcd(a, n);
-    if(b%gd)
-        return -1;
+    if(b%gd){
+        //suppose gcd(a, n) = d;
+        // then a = d.q1
+        //      n = d.q2
+        //      b = d.q3 + r
+        // now the equation a*x = b (mod n) will have a solution only when a*x - b = n*q
+        // this means d.q1.x - d.q3 - d.q2 = r = d.c
+        // hence b must be divisible by gcd(a, n)
+        cout<<"Solution can not be found"<<endl;
+        exit(0);
+    }
     a /= gd;
     b /= gd;
     n /= gd;
     b = (b*modinv(a, n))%n;
+}
 
-    return b;
-}
-no find_lcm_of_fractions(int numerator1, int denominator1, int numerator2, int denominator2) {
-    no ret;
-    ret.num = lcm(numerator1, numerator2);
-    ret.denom = gcd(denominator1, denominator2);
-    return ret;
-}
-no find(no a, no b, no c, int d){
-    long long int num_c = b.num*c.denom*a.denom - d*b.denom*a.denom;
-    long long int mul_c = c.num*b.denom*a.denom;
-    long long int denom = c.denom*b.denom*a.num;
-    if(num_c > 0)
-        num_c = (denom-num_c)%denom;
-    else 
-        num_c *=-1;
-    int m = findIntegerM(mul_c, num_c, denom);
-    // int m = 0;
-    // int num = 0;
-    // cout<<mul_c<<" "<<num_c<<" "<<denom<<endl;
-    // while(1){
-    //     num = m*mul_c + num_c;
-    //     if(num >= 0 && num%denom == 0)
-    //         break;
-    //     m++;
-    // }
-    // cout<<"m is "<<m<<endl;
-    // cout<<"n is "<<((m*mul_c + num_c)/denom)<<endl;
-    no ret;
-    ret.num = m*c.num-d;
-    ret.denom = c.denom;
-    return ret;
+void calculate(athelete*arr, int n){
+    long long int ans = 0;
+    for(int i = 0; i < n; i++){
+        int s = arr[i].s;
+        int l = arr[i].l;
+        int d = (l-arr[i].d)%l;
+        // the equation is (T.s + d)%l = 0 for all atheletes
+        // T.s = -d (mod l) = (l-d) mod l
+        // we need to convert it to T = [modinver(s)*(l-d)] mod L
+        change(s, d, l);
+        arr[i].d = d;
+        arr[i].l = l;
+    }
+    // we need to find the smallest T such that T = d[i] (mod l[i]) for all i
+    // we can use the chinese remainder theorem to find the smallest T
+    ans = arr[0].d;
+    for(int i = 0; i < n; i++){
+        auto [p, q] = egcd(arr[i].l, arr[i].d);
+        long long int inv = ans % arr[i].d;
+        ans = (ans * arr[i].l * inv + arr[i].d * inv) % (arr[i].l * inv);
+        if (ans == 0)
+            ans += arr[i].l * inv;
+        else if (ans < 0)
+            ans += math.ceil(abs(X) / (arr[i].l * inv)) * arr[i].l * inv
+    }
+    cout<<ans<<endl;
 }
 
 int main(void)
@@ -108,36 +104,8 @@ int main(void)
 		for(int i = 0; i < n; i++)
 		    cin>>arr[i].s>>arr[i].l>>arr[i].d;
 		
-		no t1 = find({arr[0].l, arr[0].s}, {arr[0].d, arr[0].s}, {arr[1].l,arr[1].s}, arr[1].d);
-		no t2 = find_lcm_of_fractions(arr[0].l, arr[0].s, arr[1].l, arr[1].s);
-		if(t1.num%t1.denom==0){
-		    t1.num /= t1.denom;
-		    t1.denom = 1;
-		}
-		if(t2.num%t2.denom==0){
-		    t2.num /= t2.denom;
-		    t2.denom = 1;
-		}
-		// cout<<"for 1 and 2 t1 is "<<t1.num<<" "<<t1.denom<<endl;
-		// cout<<"t2 is "<<t2.num<<" "<<t2.denom<<endl;
-		for(int i = 2; i < n; i++){
-		    t1.num *= -1;
-		    t1 = find(t2, t1, {arr[i].l, arr[i].s}, arr[i].d);
-		    t2 = find_lcm_of_fractions(t2.num, t2.denom, arr[i].l, arr[i].s);
-		    if(t1.num%t1.denom==0){
-    		    t1.num /= t1.denom;
-    		    t1.denom = 1;
-    		}
-    		if(t2.num%t2.denom==0){
-    		    t2.num /= t2.denom;
-    		    t2.denom = 1;
-    		}
-		//    cout<<"for new t1 is "<<t1.num<<" "<<t1.denom<<endl;
-		//    cout<<"t2 is "<<t2.num<<" "<<t2.denom<<endl;
-		}
-		Answer = t1.num/t1.denom;
-		cout<<"Case #"<<(test_case+1)<<endl;
-	    cout<<Answer<<endl;
+		cout<<"case #"<<test_case+1<<endl;
+        calculate(athlete, n);
 	}
 
 	return 0;//Your program should return 0 on normal termination.
