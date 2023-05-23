@@ -28,6 +28,7 @@ Given a graph with directed and undirected edges, the task is to assign directio
 ### Example
 
 Input:
+```
 2
 3 1 2
 1 2
@@ -37,13 +38,15 @@ Input:
 1 2
 1 3
 2 3
-
+```
 
 Output:
+```
 Case #1
 10
 Case #2
 01
+```
 
 
 ## Implementation Details
